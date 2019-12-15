@@ -1,3 +1,9 @@
+function enableAudio() {
+  const button = document.getElementById("audioButton");
+  button.innerText = "audio enabled";
+  button.disabled = true;
+}
+
 const print = message => {
   document.body.innerHTML += message + "<br/>";
 };
@@ -24,16 +30,19 @@ const requestNotificationPermission = async () => {
 const getConfig = () => {
   const defaultUri = "wss://test.mosquitto.org:8081/mqtt";
   const defaultTopic = "test-topic";
+  const defaultMp3 = "https://springfieldfiles.com/sounds/homer/candotht.mp3";
 
   const params = new URLSearchParams(window.location.search);
   const uri = params.get("uri") || defaultUri;
   const topic = params.get("topic") || defaultTopic;
   const test = /true/i.test(params.get("test"));
+  const mp3 = params.get("mp3") || defaultMp3;
 
   return {
     uri,
     topic,
-    test
+    test,
+    mp3
   };
 };
 
@@ -46,7 +55,7 @@ const main = async () => {
 
     const config = getConfig();
     print(`Config: ${JSON.stringify(config)}`);
-    const { uri, topic, test } = config;
+    const { uri, topic, test, mp3 } = config;
 
     const worker = new Worker("mqtt-worker.js");
     worker.postMessage({
@@ -61,6 +70,11 @@ const main = async () => {
         swRegistration.showNotification("New message", {
           body: message
         });
+
+        // user interacted with the page so we should be allowed to play
+        if (document.getElementById("audioButton").disabled) {
+          new Audio(mp3).play();
+        }
       }
 
       if (kind === "print") {

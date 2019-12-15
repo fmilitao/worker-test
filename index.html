@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <title>test Ws mqtt.js</title>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/mqtt/dist/mqtt.min.js"
+    ></script>
+  </head>
+  <body>
+    <script>
+      Notification.requestPermission().then(permission => {
+        document.body.innerHTML += permission.toString() + "<br/>";
+
+        if (permission === "granted") {
+          console.log("starting worker");
+          const worker = new Worker("worker.js");
+          console.log("done");
+          worker.addEventListener("message", event => {
+            document.body.innerHTML += event.data.toString() + "<br/>";
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -11,8 +11,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/paho-mqtt": "^1.0.4",
     "browserify": "^16.5.0",
-    "mqtt": "^3.0.0"
+    "mqtt": "^3.0.0",
+    "paho-mqtt": "^1.1.0"
   },
   "devDependencies": {
     "gh-pages": "^2.1.1",

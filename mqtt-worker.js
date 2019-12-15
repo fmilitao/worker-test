@@ -1,26 +1,27 @@
 importScripts("paho-mqtt.js");
 
-function print(message, notify = false) {
-  postMessage(
-    JSON.stringify({
-      message,
-      notify
-    })
-  );
+function sendMessageToMainThread(message, kind) {
+  postMessage({
+    message,
+    kind
+  });
 }
 
-async function main() {
-  // const uri = "ws://broker.mqttdashboard.com:8000/mqtt";
-  const uri = "wss://test.mosquitto.org:8081/mqtt";
+function print(message) {
+  sendMessageToMainThread(message, "print");
+}
 
+let client = null;
+
+function initialize(uri, topic) {
   const id = Math.round(Math.random() * 10e10).toString(16);
   const clientId = `clientId-${id}`;
 
-  print("v7");
-  print(`${uri} - ${clientId}`);
+  print(`uri: ${uri}`);
+  print(`topic: ${topic}`);
+  print(`clientId: ${clientId}`);
 
-  const client = new Paho.Client(uri, clientId);
-  console.log(client);
+  client = new Paho.Client(uri, clientId);
 
   // set callback handlers
   client.onConnectionLost = onConnectionLost;
@@ -31,26 +32,44 @@ async function main() {
 
   // called when the client connects
   function onConnect() {
-    // Once a connection has been made, make a subscription and send a message.
-    print("onConnect");
-    client.subscribe("World");
-    message = new Paho.Message("Hello");
-    message.destinationName = "World";
-    client.send(message);
+    print("connected");
+    client.subscribe(topic);
+
+    sendMessageToMainThread("connected", "connected");
   }
 
   // called when the client loses its connection
   function onConnectionLost(responseObject) {
     if (responseObject.errorCode !== 0) {
-      print("onConnectionLost:" + responseObject.errorMessage);
+      print(`connection lost - ${responseObject.errorMessage}`);
     }
   }
 
   // called when a message arrives
   function onMessageArrived(message) {
-    print("onMessageArrived:" + message.payloadString);
-    print(message.payloadString, true);
+    print(`received '${message.payloadString}'`);
+    sendMessageToMainThread(message.payloadString, "notification");
   }
 }
 
-main();
+function sendMessageToMqttTopic(topic, text) {
+  const message = new Paho.Message(text);
+  message.destinationName = topic;
+  client.send(message);
+}
+
+self.addEventListener("message", event => {
+  const { kind } = event.data;
+  if (kind === "init") {
+    if (client !== null) {
+      print("Error: client already initialized");
+    } else {
+      const { uri, topic } = event.data;
+      initialize(uri, topic);
+    }
+  }
+  if (kind === "message") {
+    const { message, topic } = event.data;
+    sendMessageToMqttTopic(topic, message);
+  }
+});

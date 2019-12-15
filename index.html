@@ -1,59 +1,14 @@
 <html>
   <head>
-    <title>Testing mqtt.js</title>
+    <title>MQTT Notifier</title>
     <script type="text/javascript" src="paho-mqtt.js"></script>
+    <style>
+      html {
+        font-family: monospace;
+      }
+    </style>
   </head>
   <body>
-    <script>
-      const print = message => {
-        document.body.innerHTML += message + "<br/>";
-      };
-
-      const check = () => {
-        if (!("serviceWorker" in navigator)) {
-          throw new Error("No Service Worker support!");
-        }
-        if (!("PushManager" in window)) {
-          throw new Error("No Push API Support!");
-        }
-      };
-
-      const registerServiceWorker = async () => {
-        const swRegistration = await navigator.serviceWorker.register(
-          "service.js"
-        );
-        return swRegistration;
-      };
-
-      const requestNotificationPermission = async () => {
-        const permission = await window.Notification.requestPermission();
-        print(permission);
-        if (permission !== "granted") {
-          throw new Error("Permission not granted for Notification");
-        }
-      };
-      const main = async () => {
-        try {
-          check();
-          const swRegistration = await registerServiceWorker();
-          const permission = await requestNotificationPermission();
-
-          const worker = new Worker("mqtt-worker.js");
-          worker.addEventListener("message", event => {
-            const { message, notify } = JSON.parse(event.data.toString());
-            if (notify) {
-              swRegistration.showNotification("New message", {
-                body: message
-              });
-            }
-            print(message);
-          });
-        } catch (error) {
-          print(error);
-        }
-      };
-
-      main();
-    </script>
+    <script src="index.js"></script>
   </body>
 </html>

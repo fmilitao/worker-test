@@ -4,12 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "local": "http-server .",
+    "test": "mqtt pub -t 'mqtt/demo' -h 'test.mosquitto.org' -m 'from MQTT.js'",
+    "deploy": "gh-pages -d ."
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "browserify": "^16.5.0",
     "mqtt": "^3.0.0"
+  },
+  "devDependencies": {
+    "gh-pages": "^2.1.1",
+    "http-server": "^0.12.0"
   }
 }

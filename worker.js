@@ -1,11 +1,11 @@
-console.log("worker running");
+postMessage("worker running");
 importScripts("browserMqtt.js");
 
 const client = mqtt.connect("wss://test.mosquitto.org:8081");
 client.subscribe("mqtt/demo");
 
 client.on("connect", function() {
-  console.log("connected");
+  postMessage("connected");
 });
 
 client.on("message", function(topic, payload) {
@@ -16,4 +16,4 @@ client.on("message", function(topic, payload) {
   postMessage(text);
 });
 
-console.log("stated");
+postMessage("stated");

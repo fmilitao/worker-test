@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "local": "http-server .",
-    "test": "mqtt pub -t 'mqtt/demo' -h 'test.mosquitto.org' -m 'from MQTT.js'",
+    "test": "mqtt pub -t 'World' -h 'test.mosquitto.org' -m 'from cli test'",
     "deploy": "gh-pages -d ."
   },
   "author": "",

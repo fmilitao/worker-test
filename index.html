@@ -9,25 +9,34 @@
         document.body.innerHTML += message + "<br/>";
       }
 
-      const hostname = "broker.mqttdashboard.com";
-      const port = Number(8000);
+      // const uri = "ws://broker.mqttdashboard.com:8000/mqtt";
+      const uri = "wss://test.mosquitto.org:8081/mqtt";
+
       const id = Math.round(Math.random() * 10e10).toString(16);
       const clientId = `clientId-${id}`;
 
-      print(`${hostname}:${port} - ${clientId}`);
+      print("v5");
+      print(`${uri} - ${clientId}`);
 
-      // Notification.requestPermission().then(permission => {
-      //   document.body.innerHTML += permission.toString() + "<br/>";
+      let f = () => {};
+      Notification.requestPermission().then(permission => {
+        document.body.innerHTML += permission.toString() + "<br/>";
 
-      //   if (permission === "granted") {
-      // console.log("starting worker");
-      // const worker = new Worker("worker2.js");
-      // console.log("done");
-      // worker.addEventListener("message", event => {
-      //   document.body.innerHTML += event.data.toString() + "<br/>";
-      // });
-      // Create a client instance
-      const client = new Paho.Client(hostname, port, clientId);
+        if (permission === "granted") {
+          f = body =>
+            new Notification("MQTT Message", {
+              body
+            });
+        }
+        // console.log("starting worker");
+        // const worker = new Worker("worker2.js");
+        // console.log("done");
+        // worker.addEventListener("message", event => {
+        //   document.body.innerHTML += event.data.toString() + "<br/>";
+      });
+
+      const client = new Paho.Client(uri, clientId);
+      console.log(client);
 
       // set callback handlers
       client.onConnectionLost = onConnectionLost;
@@ -56,6 +65,7 @@
       // called when a message arrives
       function onMessageArrived(message) {
         print("onMessageArrived:" + message.payloadString);
+        f(message.payloadString);
       }
       //   }
       // });

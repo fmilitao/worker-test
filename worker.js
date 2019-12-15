@@ -9,6 +9,7 @@ client.on("message", function(topic, payload) {
     body: text
   });
   postMessage(text);
+  client.end();
 });
 
 ["connect", "reconnect", "close", "disconnect"].forEach(event => {

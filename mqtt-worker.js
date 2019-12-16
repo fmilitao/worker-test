@@ -28,7 +28,7 @@ function initialize(uri, topic) {
   client.onMessageArrived = onMessageArrived;
 
   // connect the client
-  client.connect({ onSuccess: onConnect });
+  client.connect({ onSuccess: onConnect, onFailure, reconnect: true });
 
   // called when the client connects
   function onConnect() {
@@ -40,9 +40,11 @@ function initialize(uri, topic) {
 
   // called when the client loses its connection
   function onConnectionLost(responseObject) {
-    if (responseObject.errorCode !== 0) {
-      print(`connection lost - ${responseObject.errorMessage}`);
-    }
+    print(`connection lost - ${JSON.stringify(responseObject)}`);
+  }
+
+  function onFailure(responseObject) {
+    print(`connection failed - ${JSON.stringify(responseObject)}`);
   }
 
   // called when a message arrives

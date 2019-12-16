@@ -5,7 +5,12 @@ function enableAudio() {
 }
 
 const print = message => {
-  document.body.innerHTML += message + "<br/>";
+  const timestamp = new Date().toISOString();
+  const hour = timestamp.substring(
+    timestamp.indexOf("T") + 1,
+    timestamp.indexOf(".")
+  );
+  document.body.innerHTML += `[${hour}] ${message}<br/>`;
 };
 
 const check = () => {

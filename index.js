@@ -10,7 +10,7 @@ const print = message => {
     timestamp.indexOf("T") + 1,
     timestamp.indexOf(".")
   );
-  document.body.innerHTML += `[${hour}] ${message}<br/>`;
+  document.getElementById("output").innerHTML += `[${hour}] ${message}<br/>`;
 };
 
 const check = () => {
@@ -32,71 +32,90 @@ const requestNotificationPermission = async () => {
   return permission;
 };
 
-const getConfig = () => {
+const addDefaultConfig = () => {
   const defaultUri = "wss://test.mosquitto.org:8081/mqtt";
   const defaultTopic = "test-topic";
-  const defaultMp3 = "https://springfieldfiles.com/sounds/homer/candotht.mp3";
+  const defaultAudio = "https://springfieldfiles.com/sounds/homer/candotht.mp3";
 
   const params = new URLSearchParams(window.location.search);
   const uri = params.get("uri") || defaultUri;
   const topic = params.get("topic") || defaultTopic;
-  const test = /true/i.test(params.get("test"));
-  const mp3 = params.get("mp3") || defaultMp3;
+  const audio = params.get("audio") || defaultAudio;
+
+  document.getElementById("uri").value = uri;
+  document.getElementById("topic").value = topic;
+  document.getElementById("audio").value = audio;
+};
+
+const getConfig = () => {
+  const uri = document.getElementById("uri").value;
+  const topic = document.getElementById("topic").value;
+  const audio = document.getElementById("audio").value;
 
   return {
     uri,
     topic,
-    test,
-    mp3
+    audio
   };
 };
+
+let connect = () => {};
+let onMessage = () => {};
+let test = () => {};
 
 const main = async () => {
   try {
     check();
+    addDefaultConfig();
+
     const swRegistration = await registerServiceWorker();
     const permission = await requestNotificationPermission();
     print(`Notification permission: ${permission}`);
 
-    const config = getConfig();
-    print(`Config: ${JSON.stringify(config)}`);
-    const { uri, topic, test, mp3 } = config;
-
     const worker = new Worker("mqtt-worker.js");
-    worker.postMessage({
-      kind: "init",
-      uri,
-      topic
-    });
+    worker.addEventListener("message", event => onMessage(event));
 
-    worker.addEventListener("message", event => {
-      const { kind, message } = event.data;
-      if (kind === "notification" && permission === "granted") {
-        swRegistration.showNotification("New message", {
-          body: message
-        });
+    connect = () => {
+      const config = getConfig();
+      print(`Config: ${JSON.stringify(config)}`);
+      const { uri, topic, audio } = config;
+      worker.postMessage({
+        kind: "init",
+        uri,
+        topic
+      });
 
-        // user interacted with the page so we should be allowed to play
-        if (document.getElementById("audioButton").disabled) {
-          new Audio(mp3).play();
-        }
-      }
-
-      if (kind === "print") {
-        print(`mqtt-worker: ${message}`);
-      }
-
-      if (kind === "connected" && test) {
+      test = () => {
         worker.postMessage({
           kind: "message",
-          message: "Initial test message",
+          message: "Test message",
           topic
         });
-      }
-    });
+      };
+
+      onMessage = event => {
+        const { kind, message } = event.data;
+        if (kind === "notification" && permission === "granted") {
+          swRegistration.showNotification("New message", {
+            body: message
+          });
+
+          // user interacted with the page so we should be allowed to play
+          if (audio !== "") {
+            new Audio(audio).play();
+          }
+        }
+
+        if (kind === "print") {
+          print(`mqtt-worker: ${message}`);
+        }
+      };
+    };
+
+    print("Ready to connect.");
   } catch (error) {
     print(error);
   }
 };
 
-main();
+window.onload = main;

@@ -3,23 +3,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MQTT Notifier</title>
     <script type="text/javascript" src="paho-mqtt.js"></script>
+    <script type="text/javascript" src="index.js"></script>
     <style>
       html {
         font-family: monospace;
+      }
+      input {
+        width: 100%;
+      }
+      button {
+        width: 100%;
+      }
+      .config {
+        padding: 5px 10px 10px 5px;
+      }
+      button {
+        margin-top: 5px;
       }
     </style>
   </head>
   <body>
     <h2>MQTT Notifier</h2>
-    <p>
-      Audio will only play if you first interact with this page. <br />
-      Please press this button:
-      <button id="audioButton" onclick="enableAudio()">
-        press to enable audio
-      </button>
+
+    <div class="config">
+      wss uri to connect to:
+      <input type="text" id="uri" autocomplete="off" />
       <br />
-    </p>
+      topic to listen to:
+      <input type="text" id="topic" autocomplete="off" />
+      <br />
+      audio to play on notification:
+      <input type="text" id="audio" autocomplete="off" />
+      <br />
+      <button id="connect" onclick="connect()">
+        connect
+      </button>
+      <button id="connect" onclick="test()">
+        test
+      </button>
+    </div>
     <div id="sound"></div>
-    <script src="index.js"></script>
+    <div id="output"></div>
   </body>
 </html>

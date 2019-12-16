@@ -64,11 +64,11 @@ self.addEventListener("message", event => {
   const { kind } = event.data;
   if (kind === "init") {
     if (client !== null) {
-      print("Error: client already initialized");
-    } else {
-      const { uri, topic } = event.data;
-      initialize(uri, topic);
+      print("Disconnecting");
+      client.disconnect();
     }
+    const { uri, topic } = event.data;
+    initialize(uri, topic);
   }
   if (kind === "message") {
     const { message, topic } = event.data;

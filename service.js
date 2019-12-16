@@ -6,3 +6,7 @@ self.addEventListener("install", () => {
 self.addEventListener("activate", () => {
   console.log("active");
 });
+
+self.addEventListener("notificationclick", event => {
+  event.notification.close();
+});

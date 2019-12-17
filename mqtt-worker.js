@@ -21,14 +21,20 @@ function initialize(uri, topic) {
   print(`topic: ${topic}`);
   print(`clientId: ${clientId}`);
 
-  client = new Paho.Client(uri, clientId);
+  try {
+    client = new Paho.Client(uri, clientId);
 
-  // set callback handlers
-  client.onConnectionLost = onConnectionLost;
-  client.onMessageArrived = onMessageArrived;
+    // set callback handlers
+    client.onConnectionLost = onConnectionLost;
+    client.onMessageArrived = onMessageArrived;
 
-  // connect the client
-  client.connect({ onSuccess: onConnect, onFailure, reconnect: true });
+    // connect the client
+
+    client.connect({ onSuccess: onConnect, onFailure, reconnect: true });
+  } catch (error) {
+    client = null;
+    print(error);
+  }
 
   // called when the client connects
   function onConnect() {
@@ -60,13 +66,23 @@ function sendMessageToMqttTopic(topic, text) {
   client.send(message);
 }
 
+function disconnect() {
+  if (client !== null) {
+    print("Disconnecting");
+    try {
+      client.disconnect();
+    } catch (error) {
+      print(error);
+    } finally {
+      client = null;
+    }
+  }
+}
+
 self.addEventListener("message", event => {
   const { kind } = event.data;
   if (kind === "init") {
-    if (client !== null) {
-      print("Disconnecting");
-      client.disconnect();
-    }
+    disconnect();
     const { uri, topic } = event.data;
     initialize(uri, topic);
   }

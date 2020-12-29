@@ -4,7 +4,7 @@ function enableAudio() {
   button.disabled = true;
 }
 
-const print = message => {
+const print = (message) => {
   const timestamp = new Date().toISOString();
   const hour = timestamp.substring(
     timestamp.indexOf("T") + 1,
@@ -55,49 +55,62 @@ const getConfig = () => {
   return {
     uri,
     topic,
-    audio
+    audio,
   };
 };
 
 let connect = () => {};
 let onMessage = () => {};
 let test = () => {};
+let shouldConnect = false;
 
 const main = async () => {
   try {
     check();
     addDefaultConfig();
 
+    window.addEventListener("online", () => {
+      if (shouldConnect) {
+        print("Online! - reconnecting");
+        connect();
+      } else {
+        print("Online! - ready to connect");
+      }
+    });
+    window.addEventListener("offline", () => print("Offline :("));
+
     const swRegistration = await registerServiceWorker();
     const permission = await requestNotificationPermission();
     print(`Notification permission: ${permission}`);
 
     const worker = new Worker("mqtt-worker.js");
-    worker.addEventListener("message", event => onMessage(event));
+    worker.addEventListener("message", (event) => onMessage(event));
 
     connect = () => {
+      shouldConnect = true;
+
       const config = getConfig();
       print(`Config: ${JSON.stringify(config)}`);
       const { uri, topic, audio } = config;
       worker.postMessage({
         kind: "init",
         uri,
-        topic
+        topic,
       });
 
       test = () => {
         worker.postMessage({
           kind: "message",
           message: "Test message",
-          topic
+          topic,
         });
       };
 
-      onMessage = event => {
+      onMessage = (event) => {
         const { kind, message } = event.data;
         if (kind === "notification" && permission === "granted") {
           swRegistration.showNotification("New message", {
-            body: message
+            body: message,
           });
 
           // user interacted with the page so we should be allowed to play
